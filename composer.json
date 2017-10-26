@@ -1,0 +1,25 @@
+{
+    "name": "hametuha/pattern",
+    "description": "WordPress Pattern Library",
+    "type": "library",
+    "license": "GPL-3.0",
+    "authors": [
+        {
+            "name": "Hametuha INC.",
+            "email": "info@hametuha.co.jp"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {},
+    "require-dev": {
+        "phpunit/phpunit": "~4.8",
+        "squizlabs/php_codesniffer": "~2.8",
+        "wp-coding-standards/wpcs": "~0.11"
+    },
+    "autoload": {
+        "psr-0": {
+            "Hametuha\\Karma": "app/"
+        }
+    }
+
+}
