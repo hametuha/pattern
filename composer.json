@@ -18,7 +18,7 @@
     },
     "autoload": {
         "psr-0": {
-            "Hametuha\\Karma": "app/"
+            "Hametuha\\Pattern": "app/"
         }
     }
 
