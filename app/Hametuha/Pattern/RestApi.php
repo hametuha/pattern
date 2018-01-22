@@ -86,6 +86,8 @@ abstract class RestApi extends Singleton {
 			$result = $this->{$method_name}( $request );
 			if ( is_wp_error( $result ) ) {
 				return $result;
+			} elseif( is_a( $result, 'WP_REST_Response' ) ) {
+				return $result;
 			} else {
 				return new \WP_REST_Response( $result );
 			}
