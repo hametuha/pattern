@@ -3,8 +3,9 @@
 namespace Hametuha\Pattern;
 
 /**
- * Singleton pattern
- * @package karma
+ * Pattern
+ *
+ * @package pattern
  */
 abstract class Singleton {
 

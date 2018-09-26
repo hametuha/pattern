@@ -5,7 +5,7 @@ namespace Hametuha\Pattern;
 /**
  * Rest API base
  *
- * @package karma
+ * @package pattern
  */
 abstract class RestApi extends Singleton {
 

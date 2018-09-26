@@ -1,7 +1,8 @@
 <?php
-
 namespace Hametuha\Pattern;
 
+
+use Hametuha\Pattern\DB\Engine;
 
 /**
  * Model pattern
@@ -9,6 +10,7 @@ namespace Hametuha\Pattern;
  * @package karma
  * @property-read \wpdb  $db
  * @property-read string $table
+ * @property-read string $charset
  */
 abstract class Model extends Singleton {
 
@@ -20,14 +22,22 @@ abstract class Model extends Singleton {
 
 	protected $models = [];
 
+	protected $priority = 10;
+
 	protected $prefix = 'hametuha_';
+
+	protected $engine = Engine::INNODB;
+
+	private static $initialized = false;
+
+	public static $list = [];
 
 	/**
 	 * Get current table version.
 	 *
 	 * @return string
 	 */
-	private function current_version () {
+	public function current_version () {
 		return get_option( "{$this->prefix}version_{$this->table}", '0' );
 	}
 
@@ -54,8 +64,13 @@ abstract class Model extends Singleton {
 		return $this->db->get_var( $this->make_query( func_get_args() ) );
 	}
 
+	/**
+	 * Get found ros.
+	 *
+	 * @return int
+	 */
 	public function found_rows() {
-		return $this->get_var( 'SELECT FOUND_ROWS()' );
+		return (int) $this->get_var( 'SELECT FOUND_ROWS()' );
 	}
 
 	/**
@@ -117,6 +132,7 @@ abstract class Model extends Singleton {
 	 * Register table if needed.
 	 */
 	protected function init() {
+		$this->register_cli();
 		if ( ! $this->name ) {
 			$this->name = $this->default_table_name();
 		}
@@ -127,19 +143,23 @@ abstract class Model extends Singleton {
 				return;
 			}
 			$this->create_table();
-		} );
+		}, $this->priority );
 	}
 
 	/**
 	 * Update db
 	 */
 	public function create_table() {
-		$query = $this->get_tables_schema( $this->current_version() );
-		if ( $this->should_update() ) {
-			require_once ABSPATH . 'wp-admin/includes/upgrade.php';
-			dbDelta( $query );
-			update_option( "{$this->prefix}version_{$this->table}", $this->version );
+		if ( ! $this->should_update() ) {
+			return;
 		}
+		$query = $this->get_tables_schema( $this->current_version() );
+		if ( ! $query ) {
+			return;
+		}
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+		dbDelta( $query );
+		update_option( "{$this->prefix}version_{$this->table}", $this->version );
 	}
 
 	/**
@@ -148,7 +168,7 @@ abstract class Model extends Singleton {
 	 * @param string $prev_version
 	 * @return string
 	 */
-	abstract function get_tables_schema( $prev_version );
+	abstract public function get_tables_schema( $prev_version );
 
 	/**
 	 * Get place holders.
@@ -193,7 +213,7 @@ abstract class Model extends Singleton {
 			}
 			break;
 		}
-		$current_time = current_time( 'mysql', true );
+		$current_time = current_time( 'mysql', $this->use_gmt() );
 		foreach ( [ 'created', 'updated' ] as $key ) {
 			if ( !in_array( $key, $cols ) ) {
 				$cols[] = $key;
@@ -226,18 +246,22 @@ SQL;
 	 * @return int|\WP_Error Returns record ID or WP_Error on failure.
 	 */
 	final public function insert( $values ) {
-		$current_time = current_time( 'mysql', true );
+		$current_time = current_time( 'mysql', $this->use_gmt() );
 		foreach ( [ 'created', 'updated' ] as $col ) {
 			if ( ! isset( $values[ $col ] ) ) {
 				$values[ $col ] = $current_time;
 			}
 		}
-		$place_holders = $this->get_place_holders( $values );
-		$result = $this->db->insert( $this->table, $values, $place_holders );
-		if ( ! $result ) {
-			return new \WP_Error( 'db_error', __( 'Failed to insert data. Something is wrong with database.', 'karma' ) );
-		} else {
-			return (int) $this->db->insert_id;
+		try {
+			$place_holders = $this->get_place_holders( $values );
+			$result = $this->db->insert( $this->table, $values, $place_holders );
+			if ( !$result ) {
+				return new \WP_Error( 'db_error', __( 'Failed to insert data. Something is wrong with database.', 'karma' ) );
+			} else {
+				return (int) $this->db->insert_id;
+			}
+		} catch ( \Exception $e ) {
+			return new \WP_Error( 'db_error', $e->getMessage() );
 		}
 	}
 
@@ -250,9 +274,13 @@ SQL;
 	 */
 	final public function update( $values, $where ) {
 		if ( ! isset( $values[ 'updated' ] ) ) {
-			$values['updated'] = current_time( 'mysql', true );
+			$values['updated'] = current_time( 'mysql', $this->use_gmt() );
 		}
-		return $this->db->update( $this->table, $values, $where, $this->get_place_holders( $values ), $this->get_place_holders( $where ) );
+		try {
+			return $this->db->update( $this->table, $values, $where, $this->get_place_holders( $values ), $this->get_place_holders( $where ) );
+		} catch ( \Exception $e ) {
+			return false;
+		}
 	}
 
 	/**
@@ -265,9 +293,46 @@ SQL;
 	 */
 	final public function delete( array $where, $table = '', $place_holders = [] ) {
 		if ( ! $place_holders ) {
-			$place_holders = $this->get_place_holders( $where );
+			try {
+				$place_holders = $this->get_place_holders( $where );
+			} catch ( \Exception $e ) {
+				return false;
+			}
 		}
 		return $this->db->delete( $table ?: $this->table, $where, $place_holders );
+	}
+
+	/**
+	 * Detect if table exists
+	 *
+	 * @return bool
+	 */
+	public function table_exists() {
+		return (bool) $this->db->get_row( $this->db->prepare('SHOW TABLES LIKE %s', $this->table ) );
+	}
+
+	/**
+	 * If model use GMT
+	 *
+	 * @return bool
+	 */
+	protected function use_gmt() {
+		return (bool) apply_filters( 'hametuha_pattern_use_gmt', true, $this->table );
+	}
+
+	/**
+	 * Register CLI command
+	 */
+	public function register_cli() {
+		if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
+			return;
+		}
+		self::$list[$this->table] = get_called_class();
+		if ( self::$initialized ) {
+			return;
+		}
+		\WP_CLI::add_command( "schema", \Hametuha\Pattern\Command::class );
+		self::$initialized = false;
 	}
 
 	/**
@@ -283,7 +348,13 @@ SQL;
 				return $wpdb;
 				break;
 			case 'table':
-				return $this->db->prefix . $this->name;
+				return $this->db->prefix . $this->prefix . $this->name;
+				break;
+			case 'charset':
+				return defined( 'DB_CHARSET' ) && DB_CHARSET ? DB_CHARSET : 'utf8';
+				break;
+			case 'version':
+				return $this->version;
 				break;
 			default:
 				if ( isset( $this->models[ $name ] ) ) {
@@ -295,5 +366,4 @@ SQL;
 				break;
 		}
 	}
-
 }
