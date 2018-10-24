@@ -43,10 +43,32 @@ abstract class RestApi extends Singleton {
 	 * @param mixed $var
 	 * @param \WP_REST_Request $request
 	 * @param $key
-	 * @return mixed
+	 * @return bool
 	 */
 	public function is_numeric( $var, \WP_REST_Request $request, $key ) {
 		return is_numeric( $var );
+	}
+	
+	/**
+	 * Check if this is DATE(YYYY-MM-DD) format.
+	 * @param mixed $var
+	 * @param \WP_REST_Request $request
+	 * @param $key
+	 * @return bool
+	 */
+	public function is_date( $var, \WP_REST_Request $request, $key ) {
+		return (bool) preg_match( '/^\d{4}-\d{2}-\d{2}$/u', $var );
+	}
+
+	/**
+	 * Check if this is DATETIME (YYYY-MM-DD HH:ii:ss) format.
+	 * @param mixed $var
+	 * @param \WP_REST_Request $request
+	 * @param $key
+	 * @return bool
+	 */
+	public function is_datetime( $var, \WP_REST_Request $request, $key ) {
+		return (bool) preg_match( '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/u', $var );
 	}
 
 	/**
