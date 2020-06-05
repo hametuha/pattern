@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<phpdocumentor>
+    <title><![CDATA[hametuha/pattern Documentation]]></title>
+    <parser>
+        <default-package-name>pattern</default-package-name>
+        <target>docs</target>
+    </parser>
+    <transformer>
+        <target>docs</target>
+    </transformer>
+    <files>
+        <directory>app</directory>
+    </files>
+    <plugins>
+        <plugin path="Core" />
+    </plugins>
+    <transformations>
+        <template name="clean" />
+    </transformations>
+</phpdocumentor>

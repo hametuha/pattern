@@ -1,5 +1,6 @@
 # pattern
-WordPress Pattern Library
+
+WordPress Pattern Library.
 
 [![Travis CI](https://travis-ci.org/hametuha/pattern.svg?branch=master)](https://travis-ci.org/hametuha/pattern)
 
@@ -8,6 +9,10 @@ WordPress Pattern Library
 ```
 composer require hametuha/pattern
 ```
+
+## Availabe Class
+
+W.I.P
 
 ## License
 
