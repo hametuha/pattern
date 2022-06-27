@@ -16,7 +16,7 @@
     "minimum-stability": "stable",
     "require": {
         "php": "^7|^8",
-        "hametuha/rest-pattern": "^1.0"
+        "hametuha/rest-pattern": "^1.1"
     },
     "require-dev": {
         "phpunit/phpunit": "^6|^7|^8",
