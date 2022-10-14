@@ -11,7 +11,16 @@
     ],
     "scripts": {
         "test": "phpunit",
-        "doc": "phpdoc"
+        "doc": "phpdoc",
+        "lint": [
+            "phpcs --config-set installed_paths $(pwd)/vendor/wp-coding-standards/wpcs",
+            "phpcs --standard=phpcs.ruleset.xml $(find ./ -name '*.php')"
+        ],
+        "fix": [
+            "phpcs --config-set installed_paths $(pwd)/vendor/wp-coding-standards/wpcs",
+            "phpcbf --standard=phpcs.ruleset.xml $(find ./ -name '*.php')"
+        ]
+
     },
     "minimum-stability": "stable",
     "require": {
@@ -32,5 +41,10 @@
     },
     "autoload-dev": {
 
+    },
+    "config": {
+        "allow-plugins": {
+            "symfony/flex": true
+        }
     }
 }

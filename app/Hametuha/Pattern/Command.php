@@ -30,7 +30,7 @@ class Command extends \WP_CLI_Command {
 	 */
 	public function sql( $args ) {
 		list( $table_name ) = $args;
-		$rows = Model::$list;
+		$rows               = Model::$list;
 		if ( ! isset( $rows[ $table_name ] ) ) {
 			\WP_CLI::error( sprintf( '%s: table is not registered.', $table_name ) );
 		}
@@ -59,7 +59,7 @@ class Command extends \WP_CLI_Command {
 			\WP_CLI::error( 'No model is regsitered.' );
 		}
 		$table->setHeaders( [ 'Table Name', 'Model Class' ] );
-		foreach ( $rows as $table_name => $class) {
+		foreach ( $rows as $table_name => $class ) {
 			$table->addRow( [ $table_name, $class ] );
 		}
 		$table->display();

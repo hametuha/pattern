@@ -37,7 +37,7 @@ abstract class Model extends Singleton {
 	 *
 	 * @return string
 	 */
-	public function current_version () {
+	public function current_version() {
 		return get_option( "{$this->prefix}version_{$this->table}", '0' );
 	}
 
@@ -124,7 +124,7 @@ abstract class Model extends Singleton {
 	 * @return string
 	 */
 	protected function default_table_name() {
-		$class_name = explode( "\\", get_called_class() );
+		$class_name = explode( '\\', get_called_class() );
 		return $this->prefix . strtolower( $class_name[ count( $class_name ) - 1 ] );
 	}
 
@@ -181,6 +181,7 @@ abstract class Model extends Singleton {
 		$wheres = [];
 		foreach ( $args as $key => $val ) {
 			if ( ! isset( $this->default_placeholder[ $key ] ) ) {
+				// translators: %1$s is class name, %2$s is column name.
 				throw new \Exception( sprintf( __( 'Model %1$s has no column "%2$s".', 'karma' ), get_called_class(), $key ), 500 );
 			}
 			$wheres[] = $this->default_placeholder[ $key ];
@@ -215,8 +216,8 @@ abstract class Model extends Singleton {
 		}
 		$current_time = current_time( 'mysql', $this->use_gmt() );
 		foreach ( [ 'created', 'updated' ] as $key ) {
-			if ( !in_array( $key, $cols ) ) {
-				$cols[] = $key;
+			if ( ! in_array( $key, $cols, true ) ) {
+				$cols[]  = $key;
 				$records = array_map( function( $values ) use ( $key ) {
 					$values[ $key ] = current_time( 'mysql', true );
 					return $values;
@@ -230,10 +231,10 @@ abstract class Model extends Singleton {
 			}
 			return sprintf( '(%s)', implode( ', ', $escaped_values ) );
 		}, $records ) );
-		$cols = implode( ', ', array_map( function( $col ) {
+		$cols             = implode( ', ', array_map( function( $col ) {
 			return "`{$col}`";
 		}, $cols ) );
-		$query = <<<SQL
+		$query            = <<<SQL
 			INSERT INTO {$this->table} ( {$cols} ) VALUES {$value_expression}
 SQL;
 		return $this->db->query( $query );
@@ -254,8 +255,8 @@ SQL;
 		}
 		try {
 			$place_holders = $this->get_place_holders( $values );
-			$result = $this->db->insert( $this->table, $values, $place_holders );
-			if ( !$result ) {
+			$result        = $this->db->insert( $this->table, $values, $place_holders );
+			if ( ! $result ) {
 				return new \WP_Error( 'db_error', __( 'Failed to insert data. Something is wrong with database.', 'karma' ) );
 			} else {
 				return (int) $this->db->insert_id;
@@ -273,7 +274,7 @@ SQL;
 	 * @return false|int
 	 */
 	final public function update( $values, $where ) {
-		if ( ! isset( $values[ 'updated' ] ) ) {
+		if ( ! isset( $values['updated'] ) ) {
 			$values['updated'] = current_time( 'mysql', $this->use_gmt() );
 		}
 		try {
@@ -308,7 +309,7 @@ SQL;
 	 * @return bool
 	 */
 	public function table_exists() {
-		return (bool) $this->db->get_row( $this->db->prepare('SHOW TABLES LIKE %s', $this->table ) );
+		return (bool) $this->db->get_row( $this->db->prepare( 'SHOW TABLES LIKE %s', $this->table ) );
 	}
 
 	/**
@@ -327,11 +328,11 @@ SQL;
 		if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
 			return;
 		}
-		self::$list[$this->table] = get_called_class();
+		self::$list[ $this->table ] = get_called_class();
 		if ( self::$initialized ) {
 			return;
 		}
-		\WP_CLI::add_command( "schema", \Hametuha\Pattern\Command::class );
+		\WP_CLI::add_command( 'schema', \Hametuha\Pattern\Command::class );
 		self::$initialized = false;
 	}
 

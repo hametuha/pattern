@@ -53,7 +53,7 @@ abstract class TableScreen extends Singleton {
 	 * Executed inside constructor.
 	 */
 	protected function init() {
-	    add_action( 'admin_init', [ $this, 'admin_init' ] );
+		add_action( 'admin_init', [ $this, 'admin_init' ] );
 		add_action( 'admin_menu', [ $this, 'admin_menu' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'admin_enqueue_script' ] );
 	}
@@ -62,8 +62,8 @@ abstract class TableScreen extends Singleton {
 	 * Do something on admin init.
 	 */
 	public function admin_init() {
-	    // Do nothing.
-    }
+		// Do nothing.
+	}
 
 	/**
 	 * Override this function to enqueue assets.
@@ -82,7 +82,7 @@ abstract class TableScreen extends Singleton {
 			return;
 		}
 		if ( $this->parent ) {
-			add_submenu_page( $this->parent, $this->get_title(), $this->get_menu_title(), $this->get_capability(), $this->slug, [ $this, 'render'] );
+			add_submenu_page( $this->parent, $this->get_title(), $this->get_menu_title(), $this->get_capability(), $this->slug, [ $this, 'render' ] );
 		} else {
 			add_menu_page( $this->get_title(), $this->get_menu_title(), $this->get_capability(), $this->slug, [ $this, 'render' ], $this->icon, $this->position );
 		}
@@ -92,19 +92,19 @@ abstract class TableScreen extends Singleton {
 	 * Render screen.
 	 */
 	public function render() {
-	    $action = basename( $_SERVER['SCRIPT_FILENAME'] );
-	    $this->table = new $this->table_class();
-        $this->table->prepare_items();
+		$action      = basename( $_SERVER['SCRIPT_FILENAME'] );
+		$this->table = new $this->table_class();
+		$this->table->prepare_items();
 		?>
 		<div class="wrap">
-			<h2><?php echo esc_html( $this->get_title() ) ?></h2>
+			<h2><?php echo esc_html( $this->get_title() ); ?></h2>
 			<?php $this->before_table(); ?>
-			<form action="<?php echo esc_url( admin_url( $action ) ) ?>" method="get">
-                <input type="hidden" name="page" value="<?php echo esc_attr( filter_input( INPUT_GET, 'page' ) ) ?>" />
+			<form action="<?php echo esc_url( admin_url( $action ) ); ?>" method="get">
+				<input type="hidden" name="page" value="<?php echo esc_attr( filter_input( INPUT_GET, 'page' ) ); ?>" />
 			<?php
-				if ( $this->has_search ) {
-					$this->table->search_box( __( 'Search' ), 's' );
-				}
+			if ( $this->has_search ) {
+				$this->table->search_box( __( 'Search' ), 's' );
+			}
 				ob_start();
 				$this->table->display();
 				$content = ob_get_contents();
@@ -124,13 +124,13 @@ abstract class TableScreen extends Singleton {
 	 */
 	protected function before_table() {
 		do_action( 'sharee_before_table', $this->table_class );
-    }
+	}
 
 	/**
 	 * Do something after table.
 	 */
-    protected function after_table() {
+	protected function after_table() {
 		do_action( 'sharee_after_table', $this->table_class );
-    }
+	}
 
 }

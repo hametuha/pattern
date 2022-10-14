@@ -50,6 +50,9 @@ jobs:
       - name: Run PHP Unit Test
         run: composer test
 
+      - name: Run PHP CodeSniffer
+        run: composer lint
+
   release:
     name: Upload Release
     needs: [test]
