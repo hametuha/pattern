@@ -5,7 +5,7 @@ namespace Hametuha\Pattern;
 /**
  * Table Screen UI
  */
-abstract class TableScreen extends Singleton {
+abstract class TableScreen extends \Hametuha\SingletonPattern\Singleton {
 
 	protected $table_class = '';
 

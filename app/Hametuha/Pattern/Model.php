@@ -12,7 +12,7 @@ use Hametuha\Pattern\DB\Engine;
  * @property-read string $table
  * @property-read string $charset
  */
-abstract class Model extends Singleton {
+abstract class Model extends \Hametuha\SingletonPattern\Singleton {
 
 	protected $version = '';
 
